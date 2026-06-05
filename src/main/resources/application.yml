@@ -12,8 +12,8 @@ spring:
 
   datasource:
     url: ${POSTGRES_URL:jdbc:postgresql://localhost:5433/flow_manager}
-    username: ${POSTGRES_USER:flow_manager}
-    password: ${POSTGRES_PASSWORD:flow_manager}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:admin}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -44,7 +44,7 @@ spring:
 
 app:
   kafka:
-    conversion-request-topic: ${KAFKA_CONVERSION_REQUEST_TOPIC:document-conversion-input}
+    conversion-request-topic: ${KAFKA_CONVERSION_REQUEST_TOPIC:file-conversion-requested}
     conversion-result-topic: ${KAFKA_CONVERSION_RESULT_TOPIC:document-conversion-output}
 
   minio:
