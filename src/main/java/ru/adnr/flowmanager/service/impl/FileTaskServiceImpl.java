@@ -20,8 +20,8 @@ public class FileTaskServiceImpl implements FileTaskService {
 
     @Override
     @Transactional
-    public FileTask createProcessingTask(String originalFileName, String originalMinioPath) {
-        FileTask fileTask = new FileTask(originalFileName, originalMinioPath);
+    public FileTask createProcessingTask(UUID id, String originalFileName, String originalMinioPath) {
+        FileTask fileTask = new FileTask(id, originalFileName, originalMinioPath);
         return fileTaskRepository.save(fileTask);
     }
 

@@ -11,4 +11,6 @@ public interface StorageService {
     InputStream download(String objectName);
 
     boolean exists(String objectName);
+
+    void delete(String objectName);
 }

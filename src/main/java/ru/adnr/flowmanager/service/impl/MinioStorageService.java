@@ -1,6 +1,7 @@
 package ru.adnr.flowmanager.service.impl;
 
 import io.minio.BucketExistsArgs;
+import io.minio.RemoveObjectArgs;
 import io.minio.GetObjectArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
@@ -92,6 +93,18 @@ public class MinioStorageService implements StorageService {
             throw new StorageException("Failed to check file existence in MinIO: " + objectName, exception);
         } catch (Exception exception) {
             throw new StorageException("Failed to check file existence in MinIO: " + objectName, exception);
+        }
+    }
+
+    @Override
+    public void delete(String objectName) {
+        try {
+            minioClient.removeObject(RemoveObjectArgs.builder()
+                    .bucket(properties.bucket())
+                    .object(objectName)
+                    .build());
+        } catch (Exception exception) {
+            throw new StorageException("Failed to delete file from MinIO: " + objectName, exception);
         }
     }
 

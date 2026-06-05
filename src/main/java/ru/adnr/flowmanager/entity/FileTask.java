@@ -48,7 +48,8 @@ public class FileTask {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    public FileTask(String originalFileName, String originalMinioPath) {
+    public FileTask(UUID id, String originalFileName, String originalMinioPath) {
+        this.id = id;
         this.originalFileName = originalFileName;
         this.originalMinioPath = originalMinioPath;
         this.status = FileStatus.PROCESSING;

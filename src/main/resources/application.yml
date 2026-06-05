@@ -39,6 +39,10 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      properties:
+        delivery.timeout.ms: ${KAFKA_PRODUCER_DELIVERY_TIMEOUT_MS:10000}
+        request.timeout.ms: ${KAFKA_PRODUCER_REQUEST_TIMEOUT_MS:5000}
+        max.block.ms: ${KAFKA_PRODUCER_MAX_BLOCK_MS:5000}
     listener:
       ack-mode: manual
 
@@ -46,6 +50,13 @@ app:
   kafka:
     conversion-request-topic: ${KAFKA_CONVERSION_REQUEST_TOPIC:file-conversion-requested}
     conversion-result-topic: ${KAFKA_CONVERSION_RESULT_TOPIC:document-conversion-output}
+
+  outbox:
+    batch-size: ${OUTBOX_BATCH_SIZE:50}
+    publish-fixed-delay-ms: ${OUTBOX_PUBLISH_FIXED_DELAY_MS:5000}
+    send-timeout-ms: ${OUTBOX_SEND_TIMEOUT_MS:15000}
+    retry-delay-ms: ${OUTBOX_RETRY_DELAY_MS:30000}
+    max-attempts: ${OUTBOX_MAX_ATTEMPTS:10}
 
   minio:
     endpoint: ${MINIO_ENDPOINT:http://localhost:9002}
