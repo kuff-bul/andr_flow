@@ -1,16 +1,20 @@
 package ru.adnr.flowmanager.service.impl;
 
 import java.util.UUID;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import ru.adnr.flowmanager.config.MinioProperties;
+import ru.adnr.flowmanager.dto.ConvertedFile;
 import ru.adnr.flowmanager.dto.FileConversionRequestedEvent;
 import ru.adnr.flowmanager.dto.FileStatusResponse;
 import ru.adnr.flowmanager.dto.FileUploadResponse;
+import ru.adnr.flowmanager.entity.FileStatus;
 import ru.adnr.flowmanager.entity.FileTask;
 import ru.adnr.flowmanager.exception.EmptyFileException;
+import ru.adnr.flowmanager.exception.FileNotReadyException;
 import ru.adnr.flowmanager.service.FileFlowService;
 import ru.adnr.flowmanager.service.FileTaskService;
 import ru.adnr.flowmanager.service.OutboxService;
@@ -78,6 +82,20 @@ public class FileFlowServiceImpl implements FileFlowService {
         );
     }
 
+    @Override
+    public ConvertedFile downloadConvertedFile(UUID fileId) {
+        FileTask fileTask = fileTaskService.findById(fileId);
+        if (fileTask.getStatus() != FileStatus.SUCCESS || !StringUtils.hasText(fileTask.getConvertedMinioPath())) {
+            throw new FileNotReadyException(fileId);
+        }
+
+        return new ConvertedFile(
+                resolveDownloadFileName(fileTask),
+                MediaTypes.APPLICATION_PDF,
+                new InputStreamResource(storageService.download(fileTask.getConvertedMinioPath()))
+        );
+    }
+
     private String resolveOriginalFileName(MultipartFile file) {
         String originalFileName = StringUtils.cleanPath(file.getOriginalFilename() == null
                 ? "file"
@@ -91,5 +109,16 @@ public class FileFlowServiceImpl implements FileFlowService {
             return "file";
         }
         return originalFileName;
+    }
+
+    private String resolveDownloadFileName(FileTask fileTask) {
+        String originalFileName = fileTask.getOriginalFileName();
+        int dotIndex = originalFileName.lastIndexOf('.');
+        String baseName = dotIndex > 0 ? originalFileName.substring(0, dotIndex) : originalFileName;
+        return baseName + ".pdf";
+    }
+
+    private static final class MediaTypes {
+        private static final String APPLICATION_PDF = "application/pdf";
     }
 }
