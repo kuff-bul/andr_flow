@@ -58,7 +58,7 @@ eureka:
 
 app:
   kafka:
-    conversion-request-topic: ${KAFKA_CONVERSION_REQUEST_TOPIC:file-conversion-requested}
+    conversion-request-topic: ${KAFKA_CONVERSION_REQUEST_TOPIC:document-conversion-input}
     conversion-result-topic: ${KAFKA_CONVERSION_RESULT_TOPIC:document-conversion-output}
 
   outbox:

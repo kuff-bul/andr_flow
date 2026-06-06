@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,9 +35,9 @@ public class OutboxServiceImpl implements OutboxService {
     @Transactional
     public void enqueueFileConversionRequested(FileConversionRequestedEvent event) {
         outboxMessageRepository.save(new OutboxMessage(
-                event.fileId(),
+                UUID.fromString(event.messageId()),
                 conversionRequestTopic,
-                event.fileId().toString(),
+                event.messageId(),
                 toJson(event)
         ));
     }

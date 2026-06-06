@@ -1,8 +1,8 @@
 package ru.adnr.flowmanager.kafka;
 
-import ru.adnr.flowmanager.dto.FileConversionResultEvent;
+import ru.adnr.flowmanager.dto.FileConversionCompletedEvent;
 
 public interface FileConversionResultConsumer {
 
-    void consume(FileConversionResultEvent event);
+    void consume(FileConversionCompletedEvent event);
 }

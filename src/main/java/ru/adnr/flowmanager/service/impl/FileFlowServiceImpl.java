@@ -56,10 +56,11 @@ public class FileFlowServiceImpl implements FileFlowService {
             FileTask fileTask = transactionTemplate.execute(status -> {
                 FileTask createdTask = fileTaskService.createProcessingTask(fileId, originalFileName, sourceObjectName);
                 outboxService.enqueueFileConversionRequested(new FileConversionRequestedEvent(
-                        createdTask.getId(),
-                        originalFileName,
+                        createdTask.getId().toString(),
                         minioProperties.bucket(),
-                        sourceObjectName
+                        sourceObjectName,
+                        null,
+                        originalFileName
                 ));
                 return createdTask;
             });
