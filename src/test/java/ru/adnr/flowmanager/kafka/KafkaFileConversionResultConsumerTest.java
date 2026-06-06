@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.adnr.flowmanager.dto.FileConversionCompletedEvent;
+import ru.adnr.flowmanager.dto.FileConversionErrorEvent;
 import ru.adnr.flowmanager.exception.FileNotFoundException;
 import ru.adnr.flowmanager.service.FileTaskService;
 
@@ -65,5 +66,14 @@ class KafkaFileConversionResultConsumerTest {
         ));
 
         verify(fileTaskService).markSuccess(java.util.UUID.fromString(messageId), "files", "converted/test.pdf");
+    }
+
+    @Test
+    void consume_errorEventMarksTaskError() {
+        java.util.UUID fileId = java.util.UUID.randomUUID();
+
+        consumer.consume(new FileConversionErrorEvent(fileId, "Conversion failed"));
+
+        verify(fileTaskService).markError(fileId, "Conversion failed");
     }
 }

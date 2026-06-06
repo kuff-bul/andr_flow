@@ -60,6 +60,7 @@ app:
   kafka:
     conversion-request-topic: ${KAFKA_CONVERSION_REQUEST_TOPIC:document-conversion-input}
     conversion-result-topic: ${KAFKA_CONVERSION_RESULT_TOPIC:document-conversion-output}
+    conversion-error-topic: ${KAFKA_CONVERSION_ERROR_TOPIC:document-conversion-error}
 
   outbox:
     batch-size: ${OUTBOX_BATCH_SIZE:50}

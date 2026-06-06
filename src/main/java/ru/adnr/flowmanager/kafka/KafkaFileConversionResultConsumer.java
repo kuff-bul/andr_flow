@@ -9,6 +9,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 import ru.adnr.flowmanager.dto.FileConversionCompletedEvent;
+import ru.adnr.flowmanager.dto.FileConversionErrorEvent;
 import ru.adnr.flowmanager.exception.FileNotFoundException;
 import ru.adnr.flowmanager.service.FileTaskService;
 
@@ -36,9 +37,31 @@ public class KafkaFileConversionResultConsumer implements FileConversionResultCo
         }
     }
 
+    @KafkaListener(topics = "${app.kafka.conversion-error-topic}")
+    public void listenError(String payload, Acknowledgment acknowledgment) {
+        try {
+            consume(objectMapper.readValue(payload, FileConversionErrorEvent.class));
+        } catch (JsonProcessingException exception) {
+            log.error("Failed to parse file conversion error event. payload={}", payload, exception);
+        } finally {
+            acknowledgment.acknowledge();
+        }
+    }
+
     @Override
     public void consume(FileConversionCompletedEvent event) {
         markSuccess(event);
+    }
+
+    @Override
+    public void consume(FileConversionErrorEvent event) {
+        try {
+            fileTaskService.markError(event.fileId(), event.errorMessage());
+            log.info("File conversion marked as ERROR. fileId={}, errorMessage={}",
+                    event.fileId(), event.errorMessage());
+        } catch (FileNotFoundException exception) {
+            log.error("File task not found for conversion ERROR event. fileId={}", event.fileId());
+        }
     }
 
     private void markSuccess(FileConversionCompletedEvent event) {
