@@ -23,6 +23,8 @@ import ru.adnr.flowmanager.service.StorageService;
 @Service
 public class FileFlowServiceImpl implements FileFlowService {
 
+    private static final String APPLICATION_PDF = "application/pdf";
+
     private final StorageService storageService;
     private final FileTaskService fileTaskService;
     private final OutboxService outboxService;
@@ -95,7 +97,7 @@ public class FileFlowServiceImpl implements FileFlowService {
 
         return new ConvertedFile(
                 resolveDownloadFileName(fileTask),
-                MediaTypes.APPLICATION_PDF,
+                APPLICATION_PDF,
                 new InputStreamResource(storageService.download(
                         fileTask.getConvertedMinioBucket(),
                         fileTask.getConvertedMinioPath()
@@ -125,7 +127,4 @@ public class FileFlowServiceImpl implements FileFlowService {
         return baseName + ".pdf";
     }
 
-    private static final class MediaTypes {
-        private static final String APPLICATION_PDF = "application/pdf";
-    }
 }
