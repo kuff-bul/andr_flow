@@ -35,6 +35,9 @@ public class FileTask {
     @Column(name = "converted_minio_path", length = 1024)
     private String convertedMinioPath;
 
+    @Column(name = "converted_minio_bucket", length = 255)
+    private String convertedMinioBucket;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 32)
     private FileStatus status;
@@ -56,7 +59,7 @@ public class FileTask {
     }
 
     @PrePersist
-    void prePersist() {
+    private void prePersist() {
         Instant now = Instant.now();
         if (id == null) {
             id = UUID.randomUUID();
@@ -66,7 +69,7 @@ public class FileTask {
     }
 
     @PreUpdate
-    void preUpdate() {
+    private void preUpdate() {
         updatedAt = Instant.now();
     }
 }

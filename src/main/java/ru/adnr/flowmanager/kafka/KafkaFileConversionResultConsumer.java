@@ -9,7 +9,7 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 import ru.adnr.flowmanager.dto.FileConversionResultEvent;
 import ru.adnr.flowmanager.entity.FileStatus;
-import ru.adnr.flowmanager.exception.FileTaskNotFoundException;
+import ru.adnr.flowmanager.exception.FileNotFoundException;
 import ru.adnr.flowmanager.service.FileTaskService;
 
 @Component
@@ -51,10 +51,10 @@ public class KafkaFileConversionResultConsumer implements FileConversionResultCo
 
     private void markSuccess(FileConversionResultEvent event) {
         try {
-            fileTaskService.markSuccess(event.fileId(), event.convertedObjectName());
+            fileTaskService.markSuccess(event.fileId(), event.convertedBucket(), event.convertedObjectName());
             log.info("File conversion marked as SUCCESS. fileId={}, convertedBucket={}, convertedObjectName={}",
                     event.fileId(), event.convertedBucket(), event.convertedObjectName());
-        } catch (FileTaskNotFoundException exception) {
+        } catch (FileNotFoundException exception) {
             log.error("File task not found for conversion SUCCESS event. fileId={}", event.fileId());
         }
     }
@@ -63,7 +63,7 @@ public class KafkaFileConversionResultConsumer implements FileConversionResultCo
         try {
             fileTaskService.markError(event.fileId(), event.errorMessage());
             log.info("File conversion marked as ERROR. fileId={}", event.fileId());
-        } catch (FileTaskNotFoundException exception) {
+        } catch (FileNotFoundException exception) {
             log.error("File task not found for conversion ERROR event. fileId={}", event.fileId());
         }
     }

@@ -8,7 +8,7 @@ public interface StorageService {
 
     String uploadOriginal(UUID fileId, MultipartFile file);
 
-    InputStream download(String objectName);
+    InputStream download(String bucket, String objectName);
 
     boolean exists(String objectName);
 

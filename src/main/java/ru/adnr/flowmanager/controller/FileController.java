@@ -3,6 +3,7 @@ package ru.adnr.flowmanager.controller;
 import java.util.UUID;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,7 +39,7 @@ public class FileController {
     }
 
     @GetMapping("/{id}/download")
-    public ResponseEntity<?> download(@PathVariable UUID id) {
+    public ResponseEntity<InputStreamResource> download(@PathVariable UUID id) {
         ConvertedFile convertedFile = fileFlowService.downloadConvertedFile(id);
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(convertedFile.contentType()))

@@ -82,7 +82,7 @@ public class OutboxMessage {
     }
 
     @PrePersist
-    void prePersist() {
+    private void prePersist() {
         Instant now = Instant.now();
         if (id == null) {
             id = UUID.randomUUID();
@@ -95,7 +95,7 @@ public class OutboxMessage {
     }
 
     @PreUpdate
-    void preUpdate() {
+    private void preUpdate() {
         updatedAt = Instant.now();
     }
 

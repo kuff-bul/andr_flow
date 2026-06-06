@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 import ru.adnr.flowmanager.dto.FileConversionRequestedEvent;
-import ru.adnr.flowmanager.exception.KafkaEventSerializationException;
+import ru.adnr.flowmanager.exception.KafkaPublishException;
 
 @Component
 public class KafkaFileConversionProducer implements FileConversionProducer {
@@ -53,7 +53,7 @@ public class KafkaFileConversionProducer implements FileConversionProducer {
         try {
             return objectMapper.writeValueAsString(event);
         } catch (JsonProcessingException exception) {
-            throw new KafkaEventSerializationException("Failed to serialize file conversion request event", exception);
+            throw new KafkaPublishException("Failed to serialize file conversion request event", exception);
         }
     }
 }

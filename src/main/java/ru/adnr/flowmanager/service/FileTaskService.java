@@ -9,7 +9,7 @@ public interface FileTaskService {
 
     FileTask findById(UUID id);
 
-    FileTask markSuccess(UUID id, String convertedMinioPath);
+    FileTask markSuccess(UUID id, String convertedMinioBucket, String convertedMinioPath);
 
     FileTask markError(UUID id, String errorMessage);
 }

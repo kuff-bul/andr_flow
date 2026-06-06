@@ -88,11 +88,17 @@ public class FileFlowServiceImpl implements FileFlowService {
         if (fileTask.getStatus() != FileStatus.SUCCESS || !StringUtils.hasText(fileTask.getConvertedMinioPath())) {
             throw new FileNotReadyException(fileId);
         }
+        if (!StringUtils.hasText(fileTask.getConvertedMinioBucket())) {
+            throw new FileNotReadyException(fileId);
+        }
 
         return new ConvertedFile(
                 resolveDownloadFileName(fileTask),
                 MediaTypes.APPLICATION_PDF,
-                new InputStreamResource(storageService.download(fileTask.getConvertedMinioPath()))
+                new InputStreamResource(storageService.download(
+                        fileTask.getConvertedMinioBucket(),
+                        fileTask.getConvertedMinioPath()
+                ))
         );
     }
 

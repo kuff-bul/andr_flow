@@ -33,7 +33,7 @@ public class MinioStorageService implements StorageService {
     }
 
     @PostConstruct
-    void ensureBucketExists() {
+    private void ensureBucketExists() {
         try {
             boolean bucketExists = minioClient.bucketExists(BucketExistsArgs.builder()
                     .bucket(properties.bucket())
@@ -67,14 +67,14 @@ public class MinioStorageService implements StorageService {
     }
 
     @Override
-    public InputStream download(String objectName) {
+    public InputStream download(String bucket, String objectName) {
         try {
             return minioClient.getObject(GetObjectArgs.builder()
-                    .bucket(properties.bucket())
+                    .bucket(bucket)
                     .object(objectName)
                     .build());
         } catch (Exception exception) {
-            throw new StorageException("Failed to download file from MinIO: " + objectName, exception);
+            throw new StorageException("Failed to download file from MinIO: " + bucket + "/" + objectName, exception);
         }
     }
 

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.adnr.flowmanager.dto.FileConversionRequestedEvent;
 import ru.adnr.flowmanager.entity.OutboxMessage;
-import ru.adnr.flowmanager.exception.KafkaEventSerializationException;
+import ru.adnr.flowmanager.exception.KafkaPublishException;
 import ru.adnr.flowmanager.repository.OutboxMessageRepository;
 import ru.adnr.flowmanager.service.OutboxService;
 
@@ -51,7 +51,7 @@ public class OutboxServiceImpl implements OutboxService {
         try {
             return objectMapper.writeValueAsString(event);
         } catch (JsonProcessingException exception) {
-            throw new KafkaEventSerializationException("Failed to serialize file conversion request event", exception);
+            throw new KafkaPublishException("Failed to serialize file conversion request event", exception);
         }
     }
 }

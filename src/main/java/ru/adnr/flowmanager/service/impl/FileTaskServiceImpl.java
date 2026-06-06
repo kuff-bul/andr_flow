@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.adnr.flowmanager.entity.FileStatus;
 import ru.adnr.flowmanager.entity.FileTask;
-import ru.adnr.flowmanager.exception.FileTaskNotFoundException;
+import ru.adnr.flowmanager.exception.FileNotFoundException;
 import ru.adnr.flowmanager.repository.FileTaskRepository;
 import ru.adnr.flowmanager.service.FileTaskService;
 
@@ -29,14 +29,15 @@ public class FileTaskServiceImpl implements FileTaskService {
     @Transactional(readOnly = true)
     public FileTask findById(UUID id) {
         return fileTaskRepository.findById(id)
-                .orElseThrow(() -> new FileTaskNotFoundException(id));
+                .orElseThrow(() -> new FileNotFoundException(id));
     }
 
     @Override
     @Transactional
-    public FileTask markSuccess(UUID id, String convertedMinioPath) {
+    public FileTask markSuccess(UUID id, String convertedMinioBucket, String convertedMinioPath) {
         FileTask fileTask = findById(id);
         fileTask.setStatus(FileStatus.SUCCESS);
+        fileTask.setConvertedMinioBucket(convertedMinioBucket);
         fileTask.setConvertedMinioPath(convertedMinioPath);
         fileTask.setErrorMessage(null);
         return fileTask;
