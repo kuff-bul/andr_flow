@@ -1,6 +1,7 @@
 package ru.adnr.flowmanager.service.impl;
 
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -13,7 +14,6 @@ import ru.adnr.flowmanager.dto.FileStatusResponse;
 import ru.adnr.flowmanager.dto.FileUploadResponse;
 import ru.adnr.flowmanager.entity.FileStatus;
 import ru.adnr.flowmanager.entity.FileTask;
-import ru.adnr.flowmanager.exception.EmptyFileException;
 import ru.adnr.flowmanager.exception.FileNotReadyException;
 import ru.adnr.flowmanager.service.FileFlowService;
 import ru.adnr.flowmanager.service.FileTaskService;
@@ -21,6 +21,7 @@ import ru.adnr.flowmanager.service.OutboxService;
 import ru.adnr.flowmanager.service.StorageService;
 
 @Service
+@RequiredArgsConstructor
 public class FileFlowServiceImpl implements FileFlowService {
 
     private static final String APPLICATION_PDF = "application/pdf";
@@ -31,32 +32,14 @@ public class FileFlowServiceImpl implements FileFlowService {
     private final MinioProperties minioProperties;
     private final TransactionTemplate transactionTemplate;
 
-    public FileFlowServiceImpl(
-            StorageService storageService,
-            FileTaskService fileTaskService,
-            OutboxService outboxService,
-            MinioProperties minioProperties,
-            TransactionTemplate transactionTemplate
-    ) {
-        this.storageService = storageService;
-        this.fileTaskService = fileTaskService;
-        this.outboxService = outboxService;
-        this.minioProperties = minioProperties;
-        this.transactionTemplate = transactionTemplate;
-    }
-
     @Override
     public FileUploadResponse upload(MultipartFile file) {
-        if (file.isEmpty()) {
-            throw new EmptyFileException();
-        }
-
-        UUID fileId = UUID.randomUUID();
+        UUID storageId = UUID.randomUUID();
         String originalFileName = resolveOriginalFileName(file);
-        String sourceObjectName = storageService.uploadOriginal(fileId, file);
+        String sourceObjectName = storageService.uploadOriginal(storageId, file);
         try {
             FileTask fileTask = transactionTemplate.execute(status -> {
-                FileTask createdTask = fileTaskService.createProcessingTask(fileId, originalFileName, sourceObjectName);
+                FileTask createdTask = fileTaskService.createProcessingTask(originalFileName, sourceObjectName);
                 outboxService.enqueueFileConversionRequested(new FileConversionRequestedEvent(
                         createdTask.getId().toString(),
                         minioProperties.bucket(),

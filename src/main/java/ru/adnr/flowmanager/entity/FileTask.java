@@ -4,9 +4,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
@@ -14,6 +14,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Getter
 @Setter
@@ -23,6 +25,7 @@ import lombok.Setter;
 public class FileTask {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
@@ -45,31 +48,17 @@ public class FileTask {
     @Column(name = "error_message", length = 2048)
     private String errorMessage;
 
+    @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    public FileTask(UUID id, String originalFileName, String originalMinioPath) {
-        this.id = id;
+    public FileTask(String originalFileName, String originalMinioPath) {
         this.originalFileName = originalFileName;
         this.originalMinioPath = originalMinioPath;
         this.status = FileStatus.PROCESSING;
-    }
-
-    @PrePersist
-    private void prePersist() {
-        Instant now = Instant.now();
-        if (id == null) {
-            id = UUID.randomUUID();
-        }
-        createdAt = now;
-        updatedAt = now;
-    }
-
-    @PreUpdate
-    private void preUpdate() {
-        updatedAt = Instant.now();
     }
 }

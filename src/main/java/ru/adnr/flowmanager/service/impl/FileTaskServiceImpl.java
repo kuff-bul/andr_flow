@@ -1,6 +1,7 @@
 package ru.adnr.flowmanager.service.impl;
 
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.adnr.flowmanager.entity.FileStatus;
@@ -10,18 +11,15 @@ import ru.adnr.flowmanager.repository.FileTaskRepository;
 import ru.adnr.flowmanager.service.FileTaskService;
 
 @Service
+@RequiredArgsConstructor
 public class FileTaskServiceImpl implements FileTaskService {
 
     private final FileTaskRepository fileTaskRepository;
 
-    public FileTaskServiceImpl(FileTaskRepository fileTaskRepository) {
-        this.fileTaskRepository = fileTaskRepository;
-    }
-
     @Override
     @Transactional
-    public FileTask createProcessingTask(UUID id, String originalFileName, String originalMinioPath) {
-        FileTask fileTask = new FileTask(id, originalFileName, originalMinioPath);
+    public FileTask createProcessingTask(String originalFileName, String originalMinioPath) {
+        FileTask fileTask = new FileTask(originalFileName, originalMinioPath);
         return fileTaskRepository.save(fileTask);
     }
 

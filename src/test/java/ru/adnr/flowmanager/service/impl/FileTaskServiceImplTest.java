@@ -35,9 +35,13 @@ class FileTaskServiceImplTest {
     @Test
     void createProcessingTask_savesTaskWithProcessingStatus() {
         UUID id = UUID.randomUUID();
-        when(fileTaskRepository.save(any(FileTask.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(fileTaskRepository.save(any(FileTask.class))).thenAnswer(invocation -> {
+            FileTask fileTask = invocation.getArgument(0);
+            fileTask.setId(id);
+            return fileTask;
+        });
 
-        FileTask fileTask = fileTaskService.createProcessingTask(id, "test.txt", "source/test.txt");
+        FileTask fileTask = fileTaskService.createProcessingTask("test.txt", "source/test.txt");
 
         assertThat(fileTask.getId()).isEqualTo(id);
         assertThat(fileTask.getOriginalFileName()).isEqualTo("test.txt");
@@ -49,7 +53,7 @@ class FileTaskServiceImplTest {
     @Test
     void findById_returnsTaskWhenPresent() {
         UUID id = UUID.randomUUID();
-        FileTask fileTask = new FileTask(id, "test.txt", "source/test.txt");
+        FileTask fileTask = fileTask(id);
         when(fileTaskRepository.findById(id)).thenReturn(Optional.of(fileTask));
 
         FileTask result = fileTaskService.findById(id);
@@ -64,13 +68,13 @@ class FileTaskServiceImplTest {
 
         assertThatThrownBy(() -> fileTaskService.findById(id))
                 .isInstanceOf(FileNotFoundException.class)
-                .hasMessage("File task not found");
+                .hasMessage("File task not found: " + id);
     }
 
     @Test
     void markSuccess_updatesStatusAndConvertedPath() {
         UUID id = UUID.randomUUID();
-        FileTask fileTask = new FileTask(id, "test.txt", "source/test.txt");
+        FileTask fileTask = fileTask(id);
         when(fileTaskRepository.findById(id)).thenReturn(Optional.of(fileTask));
 
         FileTask result = fileTaskService.markSuccess(id, "files", "converted/test.pdf");
@@ -84,12 +88,18 @@ class FileTaskServiceImplTest {
     @Test
     void markError_updatesStatusAndErrorMessage() {
         UUID id = UUID.randomUUID();
-        FileTask fileTask = new FileTask(id, "test.txt", "source/test.txt");
+        FileTask fileTask = fileTask(id);
         when(fileTaskRepository.findById(id)).thenReturn(Optional.of(fileTask));
 
         FileTask result = fileTaskService.markError(id, "Conversion failed");
 
         assertThat(result.getStatus()).isEqualTo(FileStatus.ERROR);
         assertThat(result.getErrorMessage()).isEqualTo("Conversion failed");
+    }
+
+    private FileTask fileTask(UUID id) {
+        FileTask fileTask = new FileTask("test.txt", "source/test.txt");
+        fileTask.setId(id);
+        return fileTask;
     }
 }

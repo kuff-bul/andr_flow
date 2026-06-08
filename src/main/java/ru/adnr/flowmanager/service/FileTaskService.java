@@ -5,7 +5,7 @@ import ru.adnr.flowmanager.entity.FileTask;
 
 public interface FileTaskService {
 
-    FileTask createProcessingTask(UUID id, String originalFileName, String originalMinioPath);
+    FileTask createProcessingTask(String originalFileName, String originalMinioPath);
 
     FileTask findById(UUID id);
 

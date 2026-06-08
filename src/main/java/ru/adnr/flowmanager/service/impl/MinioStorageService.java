@@ -11,6 +11,7 @@ import io.minio.errors.ErrorResponseException;
 import jakarta.annotation.PostConstruct;
 import java.io.InputStream;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +20,7 @@ import ru.adnr.flowmanager.exception.StorageException;
 import ru.adnr.flowmanager.service.StorageService;
 
 @Service
+@RequiredArgsConstructor
 public class MinioStorageService implements StorageService {
 
     private static final String ORIGINAL_PREFIX = "source";
@@ -26,11 +28,6 @@ public class MinioStorageService implements StorageService {
 
     private final MinioClient minioClient;
     private final MinioProperties properties;
-
-    public MinioStorageService(MinioClient minioClient, MinioProperties properties) {
-        this.minioClient = minioClient;
-        this.properties = properties;
-    }
 
     @PostConstruct
     private void ensureBucketExists() {

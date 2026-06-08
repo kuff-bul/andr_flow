@@ -67,6 +67,7 @@ class FileFlowServiceImplTest {
 
     @Test
     void upload_savesFileCreatesTaskAndEnqueuesEvent() {
+        UUID taskId = UUID.randomUUID();
         MockMultipartFile file = new MockMultipartFile(
                 "file",
                 "test.txt",
@@ -84,28 +85,26 @@ class FileFlowServiceImplTest {
             TransactionCallback<FileTask> callback = invocation.getArgument(0);
             return callback.doInTransaction(new SimpleTransactionStatus());
         });
-        when(fileTaskService.createProcessingTask(any(), anyString(), anyString()))
-                .thenAnswer(invocation -> new FileTask(
-                        invocation.getArgument(0),
-                        invocation.getArgument(1),
-                        invocation.getArgument(2)
-                ));
+        when(fileTaskService.createProcessingTask(anyString(), anyString())).thenAnswer(invocation -> {
+            FileTask fileTask = new FileTask(invocation.getArgument(0), invocation.getArgument(1));
+            fileTask.setId(taskId);
+            return fileTask;
+        });
 
         FileUploadResponse response = fileFlowService.upload(file);
-        UUID fileId = response.fileId();
 
-        assertThat(response.fileId()).isEqualTo(fileId);
+        assertThat(response.fileId()).isEqualTo(taskId);
         assertThat(response.status()).isEqualTo(FileStatus.PROCESSING.name());
         ArgumentCaptor<UUID> fileIdCaptor = ArgumentCaptor.forClass(UUID.class);
         verify(storageService).uploadOriginal(fileIdCaptor.capture(), any());
-        assertThat(fileIdCaptor.getValue()).isEqualTo(fileId);
+        UUID storageId = fileIdCaptor.getValue();
 
         ArgumentCaptor<FileConversionRequestedEvent> eventCaptor = ArgumentCaptor.forClass(FileConversionRequestedEvent.class);
         verify(outboxService).enqueueFileConversionRequested(eventCaptor.capture());
         assertThat(eventCaptor.getValue()).isEqualTo(new FileConversionRequestedEvent(
-                fileId.toString(),
+                taskId.toString(),
                 "documents",
-                "source/" + fileId + "/test.txt",
+                "source/" + storageId + "/test.txt",
                 null,
                 "test.txt"
         ));
@@ -118,23 +117,23 @@ class FileFlowServiceImplTest {
 
         assertThatThrownBy(() -> fileFlowService.getStatus(fileId))
                 .isInstanceOf(FileNotFoundException.class)
-                .hasMessage("File task not found");
+                .hasMessage("File task not found: " + fileId);
     }
 
     @Test
     void downloadConvertedFile_throwsWhenFileIsStillProcessing() {
         UUID fileId = UUID.randomUUID();
-        when(fileTaskService.findById(fileId)).thenReturn(new FileTask(fileId, "test.txt", "source/test.txt"));
+        when(fileTaskService.findById(fileId)).thenReturn(fileTask(fileId));
 
         assertThatThrownBy(() -> fileFlowService.downloadConvertedFile(fileId))
                 .isInstanceOf(FileNotReadyException.class)
-                .hasMessage("Converted file is not ready yet");
+                .hasMessage("Converted file is not ready yet: " + fileId);
     }
 
     @Test
     void downloadConvertedFile_returnsResourceWhenFileReady() {
         UUID fileId = UUID.randomUUID();
-        FileTask fileTask = new FileTask(fileId, "test.txt", "source/test.txt");
+        FileTask fileTask = fileTask(fileId);
         fileTask.setStatus(FileStatus.SUCCESS);
         fileTask.setConvertedMinioBucket("files");
         fileTask.setConvertedMinioPath("converted/" + fileId + "/test.pdf");
@@ -147,5 +146,11 @@ class FileFlowServiceImplTest {
         assertThat(convertedFile.fileName()).isEqualTo("test.pdf");
         assertThat(convertedFile.contentType()).isEqualTo("application/pdf");
         assertThat(convertedFile.resource()).isInstanceOf(InputStreamResource.class);
+    }
+
+    private FileTask fileTask(UUID id) {
+        FileTask fileTask = new FileTask("test.txt", "source/test.txt");
+        fileTask.setId(id);
+        return fileTask;
     }
 }

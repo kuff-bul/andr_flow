@@ -5,9 +5,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.adnr.flowmanager.config.KafkaProperties;
 import ru.adnr.flowmanager.dto.FileConversionRequestedEvent;
 import ru.adnr.flowmanager.entity.OutboxMessage;
 import ru.adnr.flowmanager.exception.KafkaPublishException;
@@ -15,28 +16,19 @@ import ru.adnr.flowmanager.repository.OutboxMessageRepository;
 import ru.adnr.flowmanager.service.OutboxService;
 
 @Service
+@RequiredArgsConstructor
 public class OutboxServiceImpl implements OutboxService {
 
     private final OutboxMessageRepository outboxMessageRepository;
     private final ObjectMapper objectMapper;
-    private final String conversionRequestTopic;
-
-    public OutboxServiceImpl(
-            OutboxMessageRepository outboxMessageRepository,
-            ObjectMapper objectMapper,
-            @Value("${app.kafka.conversion-request-topic}") String conversionRequestTopic
-    ) {
-        this.outboxMessageRepository = outboxMessageRepository;
-        this.objectMapper = objectMapper;
-        this.conversionRequestTopic = conversionRequestTopic;
-    }
+    private final KafkaProperties kafkaProperties;
 
     @Override
     @Transactional
     public void enqueueFileConversionRequested(FileConversionRequestedEvent event) {
         outboxMessageRepository.save(new OutboxMessage(
                 UUID.fromString(event.messageId()),
-                conversionRequestTopic,
+                kafkaProperties.conversionRequestTopic(),
                 event.messageId(),
                 toJson(event)
         ));

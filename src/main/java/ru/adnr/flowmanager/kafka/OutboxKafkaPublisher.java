@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -15,6 +16,7 @@ import ru.adnr.flowmanager.entity.OutboxMessage;
 import ru.adnr.flowmanager.service.OutboxService;
 
 @Component
+@RequiredArgsConstructor
 public class OutboxKafkaPublisher {
 
     private static final Logger log = LoggerFactory.getLogger(OutboxKafkaPublisher.class);
@@ -22,16 +24,6 @@ public class OutboxKafkaPublisher {
     private final OutboxService outboxService;
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final OutboxProperties properties;
-
-    public OutboxKafkaPublisher(
-            OutboxService outboxService,
-            KafkaTemplate<String, String> kafkaTemplate,
-            OutboxProperties properties
-    ) {
-        this.outboxService = outboxService;
-        this.kafkaTemplate = kafkaTemplate;
-        this.properties = properties;
-    }
 
     @Scheduled(fixedDelayString = "${app.outbox.publish-fixed-delay-ms:5000}")
     @Transactional
