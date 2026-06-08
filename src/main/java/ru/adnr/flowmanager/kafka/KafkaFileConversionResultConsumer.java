@@ -2,10 +2,9 @@ package ru.adnr.flowmanager.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
@@ -16,9 +15,8 @@ import ru.adnr.flowmanager.service.FileTaskService;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class KafkaFileConversionResultConsumer implements FileConversionResultConsumer {
-
-    private static final Logger log = LoggerFactory.getLogger(KafkaFileConversionResultConsumer.class);
 
     private final ObjectMapper objectMapper;
     private final FileTaskService fileTaskService;
