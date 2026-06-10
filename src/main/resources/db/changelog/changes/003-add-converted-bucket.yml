@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-add-converted-bucket
+      author: codex
+      changes:
+        - addColumn:
+            tableName: file_tasks
+            columns:
+              - column:
+                  name: converted_minio_bucket
+                  type: varchar(255)

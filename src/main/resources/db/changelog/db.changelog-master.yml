@@ -1,1 +1,7 @@
-databaseChangeLog: []
+databaseChangeLog:
+  - include:
+      file: db/changelog/changes/001-create-file-tasks.yml
+  - include:
+      file: db/changelog/changes/002-create-outbox-messages.yml
+  - include:
+      file: db/changelog/changes/003-add-converted-bucket.yml

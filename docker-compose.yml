@@ -4,14 +4,14 @@ services:
     container_name: flow-manager-postgres
     environment:
       POSTGRES_DB: flow_manager
-      POSTGRES_USER: flow_manager
-      POSTGRES_PASSWORD: flow_manager
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
     ports:
       - "5433:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U flow_manager -d flow_manager"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d flow_manager"]
       interval: 10s
       timeout: 5s
       retries: 5

@@ -1,0 +1,89 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-create-outbox-messages
+      author: codex
+      changes:
+        - createTable:
+            tableName: outbox_messages
+            columns:
+              - column:
+                  name: id
+                  type: uuid
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_outbox_messages
+                    nullable: false
+              - column:
+                  name: aggregate_id
+                  type: uuid
+                  constraints:
+                    nullable: false
+              - column:
+                  name: topic
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: message_key
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: payload
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: varchar(32)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: attempts
+                  type: int
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: next_attempt_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_error
+                  type: varchar(2048)
+              - column:
+                  name: created_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sent_at
+                  type: timestamp with time zone
+        - sql:
+            dbms: postgresql
+            sql: >
+              alter table outbox_messages
+              add constraint chk_outbox_messages_status
+              check (status in ('PENDING', 'SENT', 'FAILED'))
+        - createIndex:
+            tableName: outbox_messages
+            indexName: idx_outbox_messages_ready
+            columns:
+              - column:
+                  name: status
+              - column:
+                  name: next_attempt_at
+              - column:
+                  name: created_at
+        - createIndex:
+            tableName: outbox_messages
+            indexName: idx_outbox_messages_aggregate_id
+            columns:
+              - column:
+                  name: aggregate_id
