@@ -1,5 +1,6 @@
 package ru.adnr.flowmanager.facade;
 
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -8,8 +9,6 @@ import ru.adnr.flowmanager.dto.FileStatusResponse;
 import ru.adnr.flowmanager.dto.FileUploadResponse;
 import ru.adnr.flowmanager.exception.EmptyFileException;
 import ru.adnr.flowmanager.service.FileFlowService;
-
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor

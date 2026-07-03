@@ -6,6 +6,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.ByteArrayInputStream;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,8 +20,6 @@ import ru.adnr.flowmanager.dto.FileStatusResponse;
 import ru.adnr.flowmanager.dto.FileUploadResponse;
 import ru.adnr.flowmanager.exception.EmptyFileException;
 import ru.adnr.flowmanager.service.FileFlowService;
-
-import java.io.ByteArrayInputStream;
 
 @ExtendWith(MockitoExtension.class)
 class FileFlowFacadeTest {
