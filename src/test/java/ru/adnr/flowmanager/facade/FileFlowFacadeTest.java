@@ -12,10 +12,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.mock.web.MockMultipartFile;
+import ru.adnr.flowmanager.dto.ConvertedFile;
+import ru.adnr.flowmanager.dto.FileStatusResponse;
 import ru.adnr.flowmanager.dto.FileUploadResponse;
 import ru.adnr.flowmanager.exception.EmptyFileException;
 import ru.adnr.flowmanager.service.FileFlowService;
+
+import java.io.ByteArrayInputStream;
 
 @ExtendWith(MockitoExtension.class)
 class FileFlowFacadeTest {
@@ -49,5 +54,33 @@ class FileFlowFacadeTest {
 
         assertThat(actual).isEqualTo(expected);
         verify(fileFlowService).upload(file);
+    }
+
+    @Test
+    void getStatus_delegatesToService() {
+        UUID fileId = UUID.randomUUID();
+        FileStatusResponse expected = new FileStatusResponse(fileId, "test.txt", "PROCESSING", null, null);
+        when(fileFlowService.getStatus(fileId)).thenReturn(expected);
+
+        FileStatusResponse actual = fileFlowFacade.getStatus(fileId);
+
+        assertThat(actual).isEqualTo(expected);
+        verify(fileFlowService).getStatus(fileId);
+    }
+
+    @Test
+    void downloadConvertedFile_delegatesToService() {
+        UUID fileId = UUID.randomUUID();
+        ConvertedFile expected = new ConvertedFile(
+                "test.pdf",
+                "application/pdf",
+                new InputStreamResource(new ByteArrayInputStream(new byte[]{1}))
+        );
+        when(fileFlowService.downloadConvertedFile(fileId)).thenReturn(expected);
+
+        ConvertedFile actual = fileFlowFacade.downloadConvertedFile(fileId);
+
+        assertThat(actual).isEqualTo(expected);
+        verify(fileFlowService).downloadConvertedFile(fileId);
     }
 }

@@ -18,14 +18,12 @@ import ru.adnr.flowmanager.dto.ConvertedFile;
 import ru.adnr.flowmanager.dto.FileStatusResponse;
 import ru.adnr.flowmanager.dto.FileUploadResponse;
 import ru.adnr.flowmanager.facade.FileFlowFacade;
-import ru.adnr.flowmanager.service.FileFlowService;
 
 @RestController
 @RequestMapping("/api/v1/files")
 @RequiredArgsConstructor
 public class FileController {
 
-    private final FileFlowService fileFlowService;
     private final FileFlowFacade fileFlowFacade;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -35,12 +33,12 @@ public class FileController {
 
     @GetMapping("/{id}/status")
     public FileStatusResponse getStatus(@PathVariable UUID id) {
-        return fileFlowService.getStatus(id);
+        return fileFlowFacade.getStatus(id);
     }
 
     @GetMapping("/{id}/download")
     public ResponseEntity<InputStreamResource> download(@PathVariable UUID id) {
-        ConvertedFile convertedFile = fileFlowService.downloadConvertedFile(id);
+        ConvertedFile convertedFile = fileFlowFacade.downloadConvertedFile(id);
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(convertedFile.contentType()))
                 .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()

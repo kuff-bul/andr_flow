@@ -44,7 +44,10 @@ public class OutboxServiceImpl implements OutboxService {
         try {
             return objectMapper.writeValueAsString(event);
         } catch (JsonProcessingException exception) {
-            throw new KafkaPublishException("Failed to serialize file conversion request event", exception);
+            throw new KafkaPublishException(
+                    "Failed to serialize file conversion request event. messageId=" + event.messageId(),
+                    exception
+            );
         }
     }
 }

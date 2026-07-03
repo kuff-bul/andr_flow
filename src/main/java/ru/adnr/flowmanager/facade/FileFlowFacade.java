@@ -3,9 +3,13 @@ package ru.adnr.flowmanager.facade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
+import ru.adnr.flowmanager.dto.ConvertedFile;
+import ru.adnr.flowmanager.dto.FileStatusResponse;
 import ru.adnr.flowmanager.dto.FileUploadResponse;
 import ru.adnr.flowmanager.exception.EmptyFileException;
 import ru.adnr.flowmanager.service.FileFlowService;
+
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -19,5 +23,13 @@ public class FileFlowFacade {
         }
 
         return fileFlowService.upload(file);
+    }
+
+    public FileStatusResponse getStatus(UUID id) {
+        return fileFlowService.getStatus(id);
+    }
+
+    public ConvertedFile downloadConvertedFile(UUID id) {
+        return fileFlowService.downloadConvertedFile(id);
     }
 }
