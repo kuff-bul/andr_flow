@@ -16,6 +16,26 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "EMPTY_FILE", exception.getMessage(), null);
     }
 
+    @ExceptionHandler(MissingUserLoginException.class)
+    public ResponseEntity<ErrorResponse> handleMissingUserLogin(MissingUserLoginException exception) {
+        return build(HttpStatus.BAD_REQUEST, "MISSING_USER_LOGIN", exception.getMessage(), null);
+    }
+
+    @ExceptionHandler(FileSizeLimitExceededException.class)
+    public ResponseEntity<ErrorResponse> handleFileSizeLimitExceeded(FileSizeLimitExceededException exception) {
+        return build(HttpStatus.FORBIDDEN, "FILE_SIZE_LIMIT_EXCEEDED", exception.getMessage(), null);
+    }
+
+    @ExceptionHandler(SubscriptionNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleSubscriptionNotFound(SubscriptionNotFoundException exception) {
+        return build(HttpStatus.NOT_FOUND, "SUBSCRIPTION_NOT_FOUND", exception.getMessage(), null);
+    }
+
+    @ExceptionHandler(SubscriptionCheckException.class)
+    public ResponseEntity<ErrorResponse> handleSubscriptionCheck(SubscriptionCheckException exception) {
+        return build(HttpStatus.SERVICE_UNAVAILABLE, "SUBSCRIPTION_CHECK_FAILED", exception.getMessage(), exception);
+    }
+
     @ExceptionHandler(FileNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleFileNotFound(FileNotFoundException exception) {
         return build(HttpStatus.NOT_FOUND, "FILE_NOT_FOUND", exception.getMessage(), null);

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,8 +28,11 @@ public class FileController {
     private final FileFlowFacade fileFlowFacade;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public FileUploadResponse upload(@RequestPart("file") MultipartFile file) {
-        return fileFlowFacade.upload(file);
+    public FileUploadResponse upload(
+            @RequestPart("file") MultipartFile file,
+            @RequestHeader(value = "X-User-Login", required = false) String userLogin
+    ) {
+        return fileFlowFacade.upload(file, userLogin);
     }
 
     @GetMapping("/{id}/status")
