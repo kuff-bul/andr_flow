@@ -19,6 +19,7 @@ import ru.adnr.flowmanager.dto.ConvertedFile;
 import ru.adnr.flowmanager.dto.FileStatusResponse;
 import ru.adnr.flowmanager.dto.FileUploadResponse;
 import ru.adnr.flowmanager.exception.EmptyFileException;
+import ru.adnr.flowmanager.exception.FileSizeLimitExceededException;
 import ru.adnr.flowmanager.exception.MissingUserLoginException;
 import ru.adnr.flowmanager.service.FileFlowService;
 import ru.adnr.flowmanager.subscription.SubscriptionValidationService;
@@ -67,6 +68,18 @@ class FileFlowFacadeTest {
 
         assertThatThrownBy(() -> fileFlowFacade.upload(file, " "))
                 .isInstanceOf(MissingUserLoginException.class);
+        verify(fileFlowService, never()).upload(file);
+    }
+
+    @Test
+    void upload_doesNotCreateTaskWhenSubscriptionValidationFails() {
+        MockMultipartFile file = new MockMultipartFile("file", new byte[]{1});
+        org.mockito.Mockito.doThrow(new FileSizeLimitExceededException("user1", 104_857_601L, 104_857_600L))
+                .when(subscriptionValidationService)
+                .validateUploadAllowed("user1", 1);
+
+        assertThatThrownBy(() -> fileFlowFacade.upload(file, "user1"))
+                .isInstanceOf(FileSizeLimitExceededException.class);
         verify(fileFlowService, never()).upload(file);
     }
 
