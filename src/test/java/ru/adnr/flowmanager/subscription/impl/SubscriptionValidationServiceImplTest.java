@@ -1,20 +1,16 @@
 package ru.adnr.flowmanager.subscription.impl;
 
 import org.junit.jupiter.api.Test;
-import ru.adnr.flowmanager.client.SubscriptionClient;
 import ru.adnr.flowmanager.config.SubscriptionProperties;
 import ru.adnr.flowmanager.dto.SubscriptionResponse;
 import ru.adnr.flowmanager.exception.FileSizeLimitExceededException;
-import ru.adnr.flowmanager.exception.SubscriptionCheckException;
 import ru.adnr.flowmanager.subscription.SubscriptionCacheService;
 import ru.adnr.flowmanager.subscription.SubscriptionValidationService;
-import feign.FeignException;
 
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
@@ -27,10 +23,8 @@ class SubscriptionValidationServiceImplTest {
     private static final long MAX_FREE_FILE_SIZE_BYTES = 104_857_600L;
     private static final Instant NOW = Instant.parse("2026-07-07T00:00:00Z");
 
-    private final SubscriptionClient subscriptionClient = mock(SubscriptionClient.class);
     private final SubscriptionCacheService subscriptionCacheService = mock(SubscriptionCacheService.class);
     private final SubscriptionValidationService subscriptionValidationService = new SubscriptionValidationServiceImpl(
-            subscriptionClient,
             subscriptionCacheService,
             new SubscriptionProperties(MAX_FREE_FILE_SIZE_BYTES, Duration.ofMinutes(10)),
             Clock.fixed(NOW, ZoneOffset.UTC)
@@ -41,35 +35,21 @@ class SubscriptionValidationServiceImplTest {
         subscriptionValidationService.validateUploadAllowed("user1", MAX_FREE_FILE_SIZE_BYTES);
 
         verify(subscriptionCacheService, never()).findByLogin("user1");
-        verify(subscriptionClient, never()).getSubscription("user1");
     }
 
     @Test
     void validateUploadAllowedUsesCachedSubscriptionWhenLargeFileIsAllowed() {
         SubscriptionResponse subscription = subscription(true);
-        when(subscriptionCacheService.findByLogin("user1")).thenReturn(Optional.of(subscription));
+        when(subscriptionCacheService.findByLogin("user1")).thenReturn(subscription);
 
         subscriptionValidationService.validateUploadAllowed("user1", MAX_FREE_FILE_SIZE_BYTES + 1);
 
         verify(subscriptionCacheService).findByLogin("user1");
-        verify(subscriptionClient, never()).getSubscription("user1");
-    }
-
-    @Test
-    void validateUploadAllowedFetchesAndCachesSubscriptionOnCacheMiss() {
-        SubscriptionResponse subscription = subscription(true);
-        when(subscriptionCacheService.findByLogin("user1")).thenReturn(Optional.empty());
-        when(subscriptionClient.getSubscription("user1")).thenReturn(subscription);
-
-        subscriptionValidationService.validateUploadAllowed("user1", MAX_FREE_FILE_SIZE_BYTES + 1);
-
-        verify(subscriptionClient).getSubscription("user1");
-        verify(subscriptionCacheService).save(subscription);
     }
 
     @Test
     void validateUploadAllowedRejectsLargeFileWhenSubscriptionDoesNotAllowIt() {
-        when(subscriptionCacheService.findByLogin("user1")).thenReturn(Optional.of(freeSubscription()));
+        when(subscriptionCacheService.findByLogin("user1")).thenReturn(freeSubscription());
 
         assertThatThrownBy(() -> subscriptionValidationService.validateUploadAllowed("user1", MAX_FREE_FILE_SIZE_BYTES + 1))
                 .isInstanceOf(FileSizeLimitExceededException.class)
@@ -79,24 +59,13 @@ class SubscriptionValidationServiceImplTest {
 
     @Test
     void validateUploadAllowedRejectsLargeFileWhenCachedPaidSubscriptionExpired() {
-        when(subscriptionCacheService.findByLogin("user1")).thenReturn(Optional.of(expiredPaidSubscription()));
+        when(subscriptionCacheService.findByLogin("user1")).thenReturn(expiredPaidSubscription());
 
         assertThatThrownBy(() -> subscriptionValidationService.validateUploadAllowed("user1", MAX_FREE_FILE_SIZE_BYTES + 1))
                 .isInstanceOf(FileSizeLimitExceededException.class)
                 .hasMessageContaining("login=user1");
 
         verify(subscriptionCacheService).evict("user1");
-        verify(subscriptionClient, never()).getSubscription("user1");
-    }
-
-    @Test
-    void validateUploadAllowedFailsClosedWhenSubscriptionServiceFails() {
-        when(subscriptionCacheService.findByLogin("user1")).thenReturn(Optional.empty());
-        when(subscriptionClient.getSubscription("user1")).thenThrow(mock(FeignException.ServiceUnavailable.class));
-
-        assertThatThrownBy(() -> subscriptionValidationService.validateUploadAllowed("user1", MAX_FREE_FILE_SIZE_BYTES + 1))
-                .isInstanceOf(SubscriptionCheckException.class)
-                .hasMessageContaining("login=user1");
     }
 
     private SubscriptionResponse subscription(boolean canUploadLargeFiles) {
